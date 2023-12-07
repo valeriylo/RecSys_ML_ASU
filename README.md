@@ -30,7 +30,7 @@
 - [x] Исправить проблему с выводом выбранных фильмов в рекомендациях модели
 
 ## GitHub Workflow
-**Upd.** Скачайте файл `ratings.csv` отдельно с google drive и переместите в `./data/datasets/`
+**Upd.** Скачайте файл `ratings.csv` отдельно с [google drive](https://drive.google.com/file/d/1HlvAy6BnH7IQfzceLXSOtJ9Ns9tOG3_r/view?usp=sharing) и переместите в `./data/datasets/`
 
 1. Fork репозитория https://github.com/valeriylo/RecSys_ML_ASU в свой аккаунт (кнопка Fork в правом верхнем углу)
 2. Склонировать свой репозиторий на локальную машину командой `git clone` (предварительно установив `git`)
