@@ -1,12 +1,9 @@
-import pandas as pd
 import streamlit as st
 from PIL import Image
-from utils import add_movie, set_status, capture_return, retry, set_value, load_data
-from predict import get_random_rec, get_basic_colabfilt_rec
+from src.utils import add_movie, set_status, capture_return, retry, set_value, load_data
+from src.predict import get_random_rec, get_content_rec, get_content_rank_rec
 
 st.set_page_config(page_title="Movie Recommender", layout="wide")
-
-# ToDo: Add option to select the model
 
 
 STATE_KEYS_VALS = [
@@ -67,11 +64,11 @@ st.sidebar.button(
 )
 
 # Load data
-df = load_data("data/movies_df.pickle", "data/poster.csv")
+df = load_data("data/datasets/movies.pickle")
 
 # Define functions of main part
 
-st.title("Movies Recomender with Streamlit")
+st.title("Movies Recommender with Streamlit")
 no_image = Image.open("placeholder.png")
 # When the start button has been clicked from the sidebar
 if st.session_state["status"]:
@@ -139,7 +136,7 @@ if st.session_state["status"]:
         with st.container():
             st.subheader("Recommended Movies")
             with st.spinner("Wait for it..."):
-                s3_rec_movies = get_basic_colabfilt_rec(
+                s3_rec_movies = get_content_rec(
                     df,
                     st.session_state["added_movie_ids"],
                     st.session_state["top_k"],

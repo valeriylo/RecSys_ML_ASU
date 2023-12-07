@@ -1,66 +1,32 @@
-import pandas as pd
-import requests
-import streamlit as st
 import pickle
+import requests
+import pandas as pd
+import streamlit as st
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 session = requests.Session()
 
 
-def load_data(movie_df_path, poster_df_path) -> pd.DataFrame():
+def load_data(movie_df_path):
     """
-    Load data from pickle and csv files.
+    Load data from pickle file.
     
     Parameters
     ----------
     movie_df_path : str
         Path to the pickle file.
-    poster_df_path : str
-        Path to the csv file.
     
     Returns
     -------
     df : pandas.DataFrame
-        Merged dataframe.
     """
 
     # Load main dataframe from pickle
     with (open(movie_df_path, "rb")) as f:
         movie_df = pickle.load(f)
 
-    # Load poster dataframe from csv
-    posters_df = pd.read_csv(poster_df_path, sep="\t")
-
-    # Prepare poster dataframe
-    # Fill NaN values with empty string
-    posters_df.fillna("", inplace=True)
-    # Remove year from the title (Fight Club (1999) -> Fight Club)
-    posters_df["title"] = posters_df["title"].apply(lambda x: x[:-7])
-    # Remove "The" from the end of the title (Shaw shank Redemption, The -> Shaw shank Redemption)
-    posters_df["title"] = posters_df["title"].apply(lambda x: x[:-5] if x.endswith(", The") else x)
-
-    # Merge two dataframes by title
-    df = movie_df.merge(posters_df, on="title", how="left")
-
-    st.write(df)
-
-    # Remove rows with no poster (None values)
-    df = df[df["poster_link"].notna()]
-    # Drop year_y column
-    df.drop(columns=["year_y"], inplace=True)
-    # Rename year_x to year
-    df.rename(columns={"year_x": "year"}, inplace=True)
-    # Drop item column
-    df.drop(columns=["item"], inplace=True)
-    # Reset index
-    df.reset_index(drop=True, inplace=True)
-
-    # Count number of lost movies from the original dataframe movie_df
-    lost_movies = len(movie_df) - len(df)
-    # print("Lost movies: ", lost_movies)
-
-    return df
+    return movie_df
 
 
 def compute_similarity_matrix(df):

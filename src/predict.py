@@ -1,7 +1,6 @@
 import pandas as pd
-import pickle
-from utils import compute_similarity_matrix
 import streamlit as st
+from src.utils import compute_similarity_matrix
 
 
 def get_random_rec(df, top_k):
@@ -25,7 +24,7 @@ def get_random_rec(df, top_k):
     return recs
 
 
-def get_basic_colabfilt_rec(df, input_ids, top_k):
+def get_content_rec(df, input_ids, top_k):
     """
     Get basic collaborative filtering recommendations.
     
@@ -77,7 +76,7 @@ def get_basic_colabfilt_rec(df, input_ids, top_k):
     return recs
 
 
-def get_advanced_colabfilt_rec(df, input_ids, top_k):
+def get_content_rank_rec(df, input_ids, top_k):
     """
     Get advanced collaborative filtering recommendations.
     Use the ratings data to get the top k movies. Also, use the 
@@ -99,8 +98,7 @@ def get_advanced_colabfilt_rec(df, input_ids, top_k):
 
     # If popularity ratio is hight and raiting is high for cos score, assign highter position in ranking
 
-
-    return get_basic_colabfilt_rec(df, input_ids, top_k)
+    return get_content_rec(df, input_ids, top_k)
 
 
 
