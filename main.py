@@ -64,12 +64,12 @@ st.sidebar.button(
 )
 
 # Load data
-df = load_data("data/datasets/movies.pickle")
+df = load_data("data/datasets/movies_df.csv")
 
 # Define functions of main part
 
 st.title("Movies Recommender with Streamlit")
-no_image = Image.open("placeholder.png")
+no_image = Image.open(r"placeholder.png")
 # When the start button has been clicked from the sidebar
 if st.session_state["status"]:
     unique_key = 0

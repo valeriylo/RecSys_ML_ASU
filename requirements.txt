@@ -3,4 +3,4 @@ scikit-learn
 streamlit
 Pillow
 jupyter
-sqlite3
+#пшеsqlite3

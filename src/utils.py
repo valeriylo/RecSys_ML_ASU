@@ -23,10 +23,9 @@ def load_data(movie_df_path):
     """
 
     # Load main dataframe from pickle
-    with (open(movie_df_path, "rb")) as f:
-        movie_df = pickle.load(f)
+    df = pd.read_csv(movie_df_path)
 
-    return movie_df
+    return df
 
 
 def compute_similarity_matrix(df):
