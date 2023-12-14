@@ -5,7 +5,7 @@ from src.predict import get_random_rec, get_content_rec, get_content_rank_rec
 
 st.set_page_config(page_title="Movie Recommender", layout="wide")
 
-
+#Комментарий от меня
 STATE_KEYS_VALS = [
     ("selected_movie_count", 0),  # main view
     ("added_movie_ids", []),  # main view
