@@ -4,3 +4,4 @@ streamlit
 Pillow
 jupyter
 #sqlite3
+gdown
