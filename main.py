@@ -1,10 +1,9 @@
 import streamlit as st
 from PIL import Image
-from src.utils import add_movie, set_status, capture_return, retry, set_value, load_data
+from src.utils import add_movie, set_status, capture_return, retry, set_value, load_movies_df, load_users_df
 from src.predict import get_random_rec, get_content_rec, get_content_rank_rec
 
 st.set_page_config(page_title="Movie Recommender", layout="wide")
-
 
 STATE_KEYS_VALS = [
     ("selected_movie_count", 0),  # main view
@@ -14,6 +13,7 @@ STATE_KEYS_VALS = [
     ("input_len", 10),  # sidebar view
     ("top_k", 10),  # sidebar view
     ("years", (1990, 2010)),  # sidebar view
+    ("model_type", "Content-based"),  # sidebar view
 ]
 for k, v in STATE_KEYS_VALS:
     if k not in st.session_state:
@@ -56,6 +56,17 @@ st.sidebar.number_input(
     key="key_top_k",
 )
 
+# Select model type in sidebar (make selectbox uneditable on user click )
+model_type = st.sidebar.selectbox(
+    "Select a model type",
+    ("Random", "Content-based", "Content-based with ranking"),
+    index=1,
+    disabled=st.session_state["status"],
+    on_change=set_value,
+    args=("model_type",),
+    key="key_model_type",
+)
+
 st.sidebar.button(
     "START",
     on_click=set_status,
@@ -63,23 +74,26 @@ st.sidebar.button(
     disabled=st.session_state["status"],
 )
 
-# Load data
-df = load_data("data/datasets/movies.pickle")
+# Load movies only data
+movies_df = load_movies_df("./data/datasets/movies_df.pickle", "./data/datasets/poster.csv")
+
+# Load users data with movies and ratings (warning: this is a large file, may affect performance)
+# users_df = load_users_df(movies_df, "./data/datasets/ratings.csv", "./data/datasets/links.csv")
 
 # Define functions of main part
 
 st.title("Movies Recommender with Streamlit")
-no_image = Image.open("placeholder.png")
+no_image = Image.open("data/placeholder.png")
 # When the start button has been clicked from the sidebar
 if st.session_state["status"]:
     unique_key = 0
-    df = df[~df["title"].isin(st.session_state["added_movie_ids"])]
-    df = df[(df["year"] >= years[0]) & (df["year"] <= years[1])]
+    movies_df = movies_df[~movies_df["title"].isin(st.session_state["added_movie_ids"])]
+    movies_df = movies_df[(movies_df["year"] >= years[0]) & (movies_df["year"] <= years[1])]
     # Remove duplicates and reset index
-    df.drop_duplicates(subset=["title"], inplace=True)
-    df.reset_index(drop=True, inplace=True)
+    movies_df.drop_duplicates(subset=["title"], inplace=True)
+    movies_df.reset_index(drop=True, inplace=True)
 
-    random_movies = df.sample(20)
+    random_movies = movies_df.sample(20)
 
     selection_container = st.empty()
 
@@ -99,7 +113,7 @@ if st.session_state["status"]:
                 for col_index, col in enumerate(st.columns(10)):
                     movie = random_movies.iloc[unique_key]
                     title = movie["title"]
-                    movie_id = df[df['title'] == title]['id'].values[0]
+                    movie_id = movies_df[movies_df['title'] == title]['tmdb_id'].values[0]
                     poster = movie["poster_link"] if movie["poster_link"] else no_image
                     unique_key += 1
 
@@ -108,7 +122,7 @@ if st.session_state["status"]:
                         capture_return(
                             st.checkbox(
                                 title,
-                                key="mov-{}".format(movie["id"]),
+                                key="mov-{}".format(movie["tmdb_id"]),
                                 on_change=add_movie,
                                 args=(movie,),
                             )
@@ -121,12 +135,12 @@ if st.session_state["status"]:
         with st.container():
             st.subheader("Random Movies")
             with st.spinner("Wait for it..."):
-                random_rec_movies = get_random_rec(df, st.session_state["top_k"])
+                random_rec_movies = get_random_rec(movies_df, st.session_state["top_k"])
             # Render recommended movies
             for col_index, col in enumerate(st.columns(st.session_state["top_k"])):
                 movie = random_rec_movies.iloc[col_index]
                 title = movie["title"]
-                movie_id = df[df['title'] == title]['id'].values[0]
+                movie_id = movies_df[movies_df['title'] == title]['tmdb_id'].values[0]
                 poster = movie["poster_link"] if movie["poster_link"] else no_image
 
                 with col:
@@ -137,7 +151,7 @@ if st.session_state["status"]:
             st.subheader("Recommended Movies")
             with st.spinner("Wait for it..."):
                 s3_rec_movies = get_content_rec(
-                    df,
+                    movies_df,
                     st.session_state["added_movie_ids"],
                     st.session_state["top_k"],
                 )
@@ -146,7 +160,7 @@ if st.session_state["status"]:
             for col_index, col in enumerate(st.columns(st.session_state["top_k"])):
                 movie = s3_rec_movies.iloc[col_index]
                 title = movie["title"]
-                movie_id = df[df['title'] == title]['id'].values[0]
+                movie_id = movies_df[movies_df['title'] == title]['tmdb_id'].values[0]
                 poster = movie["poster_link"] if movie["poster_link"] else no_image
                 with col:
                     st.image(poster)
