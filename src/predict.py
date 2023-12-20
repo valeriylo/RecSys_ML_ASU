@@ -52,7 +52,7 @@ def get_content_rec(df, input_ids, top_k):
     # Iterate over the input movie ids
     for input_id in input_ids:
         # Get the index of the input movie
-        idx = df[df["id"] == input_id].index[0]
+        idx = df[df["tmdb_id"] == input_id].index[0]
         # Get the similarity scores of the input movie
         sim_scores = list(enumerate(similarity_matrix[idx]))
         # Sort the movies based on the similarity scores
@@ -67,7 +67,6 @@ def get_content_rec(df, input_ids, top_k):
     df_scores = pd.DataFrame({"idx": movie_indices, "score": scores})
     # Sort the dataframe based on the scores
     df_scores.sort_values(by="score", ascending=False, inplace=True)
-    st.write(df_scores)
     # Get the top k movie indices
     top_k_indices = df_scores["idx"].values[:top_k]
     # Get the top k movies
