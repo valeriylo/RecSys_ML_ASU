@@ -78,8 +78,8 @@ def get_content_rec(df, input_ids, top_k):
 def get_content_rank_rec(df, input_ids, top_k):
     """
     Get advanced collaborative filtering recommendations.
-    Use the ratings data to get the top k movies. Also, use the 
-    
+    Use the ratings data to get the top k movies.
+
     Parameters
     ----------
     df : pandas.DataFrame
@@ -88,16 +88,51 @@ def get_content_rank_rec(df, input_ids, top_k):
             List of input movie ids.
     top_k : int
             Number of recommendations.
-    
+
     Returns
     -------
     recs : pandas.DataFrame
             Recommended movies.
     """
-
     # If popularity ratio is hight and raiting is high for cos score, assign highter position in ranking
+    # Compute similarity matrix
+    similarity_matrix = compute_similarity_matrix(df)
 
-    return get_content_rec(df, input_ids, top_k)
+    # Store the movie indices, scores, popularity and rating
+    movie_indices = []
+    scores = []
+    cur_idx = []
+    rating = []
+    pop = []
+    # Prevent the appearence of the selected movies
+    np.fill_diagonal(similarity_matrix, 0)
+    # Iterate over the input movie ids
+    for input_id in input_ids:
+        # Get the index of the input movie
+        idx = df[df["id"] == input_id].index[0]
+        cur_idx.append(idx)
+        # Get the similarity scores of the input movie
+        sim_scores = list(enumerate(similarity_matrix[idx]))
+        # Sort the movies based on the similarity scores
+        sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+        # Get the movie indices
+        movie_indices.extend([i[0] for i in sim_scores])
+        # Get popularity and ratings of movies
+        pop.extend((df.iloc[[i[0] for i in sim_scores]])['popularity'])
+        rating.extend((df.iloc[[i[0] for i in sim_scores]])['vote_average'])
+        # Get the movie scores
+        scores.extend([i[1] for i in sim_scores])
+    print(len(movie_indices))
+    # Create dataframe of movie indices and scores
+    df_scores = pd.DataFrame({"idx": movie_indices, "score": scores, "rating": rating, "pop": pop})
+    # Sort the dataframe based on the scores, popularity and then rating
+    df_scores.sort_values(by=["score", "pop", "rating"], ascending=[False, False, False], inplace=True)
+    # Get the top k movie indices
+    top_k_indices = df_scores["idx"].values[:10]
+    # Get the top k movies
+    recs = df.iloc[top_k_indices]
+
+    return recs
 
 
 
