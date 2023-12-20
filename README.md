@@ -1,7 +1,7 @@
 # Streamlit RecSys
 
 ## Demo
-[Streamlit Cloud]()
+[Streamlit Cloud](https://movie-recsys.streamlit.app)
 
 ## RoadMap Задач
 
