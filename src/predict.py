@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import streamlit as st
 from src.utils import compute_similarity_matrix
 
@@ -45,7 +46,8 @@ def get_content_rec(df, input_ids, top_k):
 
     # Compute similarity matrix
     similarity_matrix = compute_similarity_matrix(df)
-    
+    # Теперь выбранные фильмы не будут выдаваться фильтрацией
+    np.fill_diagonal(similarity_matrix, 0)
     # Store the movie indices and scores
     movie_indices = []
     scores = []
