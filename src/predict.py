@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import streamlit as st
 from src.utils import compute_similarity_matrix
 
@@ -6,14 +7,14 @@ from src.utils import compute_similarity_matrix
 def get_random_rec(df, top_k):
     """
     Get random recommendations.
-    
+
     Parameters
     ----------
     df : pandas.DataFrame
             Movie Dataframe.
     top_k : int
             Number of recommendations.
-    
+
     Returns
     -------
     recs : pandas.DataFrame
@@ -27,7 +28,7 @@ def get_random_rec(df, top_k):
 def get_content_rec(df, input_ids, top_k):
     """
     Get basic collaborative filtering recommendations.
-    
+
     Parameters
     ----------
     df : pandas.DataFrame
@@ -36,7 +37,7 @@ def get_content_rec(df, input_ids, top_k):
             Indecis of input movie ids.
     top_k : int
             Number of recommendations.
-    
+
     Returns
     -------
     recs : pandas.DataFrame
@@ -45,10 +46,12 @@ def get_content_rec(df, input_ids, top_k):
 
     # Compute similarity matrix
     similarity_matrix = compute_similarity_matrix(df)
-    
+
     # Store the movie indices and scores
     movie_indices = []
     scores = []
+    # Prevent the appearence of the selected movies
+    np.fill_diagonal(similarity_matrix, 0)
     # Iterate over the input movie ids
     for input_id in input_ids:
         # Get the index of the input movie
@@ -62,7 +65,7 @@ def get_content_rec(df, input_ids, top_k):
         movie_indices.extend([i[0] for i in sim_scores])
         # Get the movie scores
         scores.extend([i[1] for i in sim_scores])
-    
+
     # Create dataframe of movie indices and scores
     df_scores = pd.DataFrame({"idx": movie_indices, "score": scores})
     # Sort the dataframe based on the scores
@@ -109,7 +112,7 @@ def get_content_rank_rec(df, input_ids, top_k):
     # Iterate over the input movie ids
     for input_id in input_ids:
         # Get the index of the input movie
-        idx = df[df["id"] == input_id].index[0]
+        idx = df[df["tmdb_id"] == input_id].index[0]
         cur_idx.append(idx)
         # Get the similarity scores of the input movie
         sim_scores = list(enumerate(similarity_matrix[idx]))

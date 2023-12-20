@@ -116,7 +116,6 @@ if st.session_state["status"]:
                     movie_id = movies_df[movies_df['title'] == title]['tmdb_id'].values[0]
                     poster = movie["poster_link"] if movie["poster_link"] else no_image
                     unique_key += 1
-
                     with col:
                         st.image(poster)
                         capture_return(
@@ -131,41 +130,61 @@ if st.session_state["status"]:
     else:
         # Empty the above view
         selection_container.empty()
+        if model_type == "Random":
+            with st.container():
+                st.subheader("Random Movies")
+                with st.spinner("Wait for it..."):
+                    random_rec_movies = get_random_rec(movies_df, st.session_state["top_k"])
+                # Render recommended movies
+                for col_index, col in enumerate(st.columns(st.session_state["top_k"])):
+                    movie = random_rec_movies.iloc[col_index]
+                    title = movie["title"]
+                    movie_id = movies_df[movies_df['title'] == title]['tmdb_id'].values[0]
+                    poster = movie["poster_link"] if movie["poster_link"] else no_image
 
-        with st.container():
-            st.subheader("Random Movies")
-            with st.spinner("Wait for it..."):
-                random_rec_movies = get_random_rec(movies_df, st.session_state["top_k"])
-            # Render recommended movies
-            for col_index, col in enumerate(st.columns(st.session_state["top_k"])):
-                movie = random_rec_movies.iloc[col_index]
-                title = movie["title"]
-                movie_id = movies_df[movies_df['title'] == title]['tmdb_id'].values[0]
-                poster = movie["poster_link"] if movie["poster_link"] else no_image
+                    with col:
+                        st.image(poster)
+                        st.caption(title)
 
-                with col:
-                    st.image(poster)
-                    st.caption(title)
+        elif model_type == "Content-based":
+            with st.container():
+                st.subheader("Recommended Movies")
+                with st.spinner("Wait for it..."):
+                    s2_rec_movies = get_content_rec(
+                        movies_df,
+                        st.session_state["added_movie_ids"],
+                        st.session_state["top_k"],
+                    )
 
-        with st.container():
-            st.subheader("Recommended Movies")
-            with st.spinner("Wait for it..."):
-                s3_rec_movies = get_content_rec(
-                    movies_df,
-                    st.session_state["added_movie_ids"],
-                    st.session_state["top_k"],
-                )
+                # Render recommended movies
+                for col_index, col in enumerate(st.columns(st.session_state["top_k"])):
+                    movie = s2_rec_movies.iloc[col_index]
+                    title = movie["title"]
+                    movie_id = movies_df[movies_df['title'] == title]['tmdb_id'].values[0]
+                    poster = movie["poster_link"] if movie["poster_link"] else no_image
+                    with col:
+                        st.image(poster)
+                        st.caption(title)
 
-            # Render recommended movies
-            for col_index, col in enumerate(st.columns(st.session_state["top_k"])):
-                movie = s3_rec_movies.iloc[col_index]
-                title = movie["title"]
-                movie_id = movies_df[movies_df['title'] == title]['tmdb_id'].values[0]
-                poster = movie["poster_link"] if movie["poster_link"] else no_image
-                with col:
-                    st.image(poster)
-                    st.caption(title)
+        elif model_type == "Content-based with ranking":
+            with st.container():
+                st.subheader("Recommended Movies With Ranking")
+                with st.spinner("Wait for it..."):
+                    s3_rec_movies = get_content_rank_rec(
+                        movies_df,
+                        st.session_state["added_movie_ids"],
+                        st.session_state["top_k"],
+                    )
 
+                # Render recommended movies
+                for col_index, col in enumerate(st.columns(st.session_state["top_k"])):
+                    movie = s3_rec_movies.iloc[col_index]
+                    title = movie["title"]
+                    movie_id = movies_df[movies_df['title'] == title]['tmdb_id'].values[0]
+                    poster = movie["poster_link"] if movie["poster_link"] else no_image
+                    with col:
+                        st.image(poster)
+                        st.caption(title)
         (_, center, _) = st.columns([4, 1, 4])
         with center:
             st.button(
